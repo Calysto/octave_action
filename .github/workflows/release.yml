@@ -50,7 +50,7 @@ jobs:
           DRY_RUN: ${{ inputs.dry_run }}
         run: |
           TAG="v${VERSION}"
-          echo "tag=${TAG}" >> $GITHUB_OUTPUT
+          echo "tag=${TAG}" >> "$GITHUB_OUTPUT"
           if [ "$DRY_RUN" = "true" ]; then
             echo "Dry run: would create tag ${TAG}"
           else

@@ -14,7 +14,11 @@ runs:
       shell: bash
       run: |
         mkdir -p ~/apt-cache
-        echo "OS_VERSION=$(. /etc/os-release && echo $VERSION_ID)" >> $GITHUB_ENV # zizmor: ignore[dangerous-env-file]
+        {
+          echo 'OS_VERSION<<ENDOFVALUE'
+          . /etc/os-release && echo "$VERSION_ID"
+          echo 'ENDOFVALUE'
+        } >> "$GITHUB_ENV"
 
     - name: Cache apt packages (ubuntu)
       if: startsWith(inputs.install-type, 'ubuntu')
@@ -55,8 +59,11 @@ runs:
       if: inputs.install-type == 'macos'
       shell: bash
       run: |
-        OCTAVE_VERSION=$(brew info --json octave | python3 -c "import sys,json; print(json.load(sys.stdin)[0]['versions']['stable'])")
-        echo "OCTAVE_VERSION=$OCTAVE_VERSION" >> $GITHUB_ENV # zizmor: ignore[dangerous-env-file]
+        {
+          echo 'OCTAVE_VERSION<<ENDOFVALUE'
+          brew info --json octave | python3 -c "import sys,json; print(json.load(sys.stdin)[0]['versions']['stable'])"
+          echo 'ENDOFVALUE'
+        } >> "$GITHUB_ENV"
 
     - name: Restore Octave from cache (macos)
       if: inputs.install-type == 'macos'
