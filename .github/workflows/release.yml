@@ -89,8 +89,10 @@ jobs:
           git remote set-url origin "https://x-access-token:${TOKEN}@github.com/${REPOSITORY}"
 
       - name: Update v1 tag
+        env:
+          TAG: ${{ needs.release.outputs.tag }}
         run: |
           git tag -d v1 || true
           git push origin :refs/tags/v1 || true
-          git tag v1 ${{ needs.release.outputs.tag }}
+          git tag v1 "$TAG"
           git push origin v1

@@ -14,7 +14,7 @@ runs:
       shell: bash
       run: |
         mkdir -p ~/apt-cache
-        echo "OS_VERSION=$(. /etc/os-release && echo $VERSION_ID)" >> $GITHUB_ENV
+        echo "OS_VERSION=$(. /etc/os-release && echo $VERSION_ID)" >> $GITHUB_ENV # zizmor: ignore[dangerous-env-file]
 
     - name: Cache apt packages (ubuntu)
       if: startsWith(inputs.install-type, 'ubuntu')
@@ -56,7 +56,7 @@ runs:
       shell: bash
       run: |
         OCTAVE_VERSION=$(brew info --json octave | python3 -c "import sys,json; print(json.load(sys.stdin)[0]['versions']['stable'])")
-        echo "OCTAVE_VERSION=$OCTAVE_VERSION" >> $GITHUB_ENV
+        echo "OCTAVE_VERSION=$OCTAVE_VERSION" >> $GITHUB_ENV # zizmor: ignore[dangerous-env-file]
 
     - name: Restore Octave from cache (macos)
       if: inputs.install-type == 'macos'
@@ -134,10 +134,12 @@ runs:
 
     - name: Verify octave install
       shell: bash
+      env:
+        INSTALL_TYPE: ${{ inputs.install-type }}
       run: |
         set -eu
         export EXE="octave"
-        if [ "${{ inputs.install-type }}" == "ubuntu-flatpak" ]; then
+        if [ "$INSTALL_TYPE" == "ubuntu-flatpak" ]; then
           export EXE="flatpak run org.octave.Octave"
         fi
         $EXE --version
