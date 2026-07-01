@@ -133,11 +133,11 @@ runs:
 
     - name: Start Xvfb on linux
       shell: bash
-      if: ${{ startsWith('ubuntu', inputs.install-type) }}
+      if: ${{ startsWith(inputs.install-type, 'ubuntu') }}
       run: |
         set -eu
         Xvfb :99 -screen 0 1024x768x24 &
-        echo "DISPLAY=:99" >> $GITHUB_ENV
+        echo "DISPLAY=:99" >> "$GITHUB_ENV"
 
     - name: Verify octave install
       shell: bash
