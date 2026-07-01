@@ -46,9 +46,31 @@ jobs:
         with:
           install-type: windows
 
+  test-ubuntu-flatpak:
+    name: Test (ubuntu-flatpak)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - uses: ./
+        with:
+          install-type: ubuntu-flatpak
+
+  test-ubuntu-snap:
+    name: Test (ubuntu-snap)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - uses: ./
+        with:
+          install-type: ubuntu-snap
+
   tests-check:
     if: always()
-    needs: [test-ubuntu, test-macos, test-windows]
+    needs: [test-ubuntu, test-macos, test-windows, test-ubuntu-flatpak, test-ubuntu-snap]
     runs-on: ubuntu-latest
     steps:
       - name: Decide whether all jobs succeeded
