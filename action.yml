@@ -129,7 +129,9 @@ runs:
       shell: bash
       run: |
         set -eu
+        sudo apt-get install -y gnuplot
         sudo snap install octave --edge
+        sudo snap connect octave:x11
 
     - name: Start Xvfb on linux
       shell: bash
@@ -150,7 +152,9 @@ runs:
           export EXE="flatpak run org.octave.Octave"
         fi
         $EXE --version
-        if [ "$INSTALL_TYPE" != "ubuntu-snap" ]; then
-          $EXE --eval "available_graphics_toolkits"
+        $EXE --eval "available_graphics_toolkits"
+        if [ "$INSTALL_TYPE" == "ubuntu-snap" ]; then
+          $EXE --eval "graphics_toolkit('gnuplot'); graphics_toolkit"
+        else
           $EXE --eval "graphics_toolkit"
         fi
