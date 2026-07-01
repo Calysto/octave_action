@@ -150,5 +150,7 @@ runs:
           export EXE="flatpak run org.octave.Octave"
         fi
         $EXE --version
-        $EXE --eval "available_graphics_toolkits"
-        $EXE --eval "graphics_toolkit"
+        if [ "$INSTALL_TYPE" != "ubuntu-snap" ]; then
+          $EXE --eval "available_graphics_toolkits"
+          $EXE --eval "graphics_toolkit"
+        fi
