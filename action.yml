@@ -1,0 +1,14 @@
+name: Install Octave
+description: Installs Octave for the given platform type.
+
+inputs:
+  install-type:
+    description: 'Platform install type: ubuntu, macos, windows, ubuntu-flatpak, or ubuntu-snap'
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - uses: blink1073/octave_kernel@v1
+      with:
+        install-type: ${{ inputs.install-type }}
