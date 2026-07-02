@@ -130,7 +130,8 @@ runs:
       run: |
         set -eu
         sudo apt-get install -y gnuplot
-        sudo snap install octave --edge
+        sudo snap wait system seed.loaded
+        timeout 180 sudo snap install octave --edge
         sudo snap connect octave:x11
 
     - name: Start Xvfb on linux
