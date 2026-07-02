@@ -131,7 +131,17 @@ runs:
         set -eu
         sudo apt-get install -y gnuplot
         sudo snap wait system seed.loaded
-        timeout 180 sudo snap install octave --edge
+        for i in 1 2 3; do
+          if timeout 180 sudo snap install octave --edge; then
+            break
+          fi
+          echo "snap install attempt $i timed out, retrying..."
+          if [ "$i" == "3" ]; then
+            echo "::error::snap install failed after 3 attempts"
+            exit 1
+          fi
+          sleep 10
+        done
         sudo snap connect octave:x11
 
     - name: Start Xvfb on linux
