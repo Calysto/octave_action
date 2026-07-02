@@ -131,17 +131,18 @@ runs:
         set -eu
         sudo apt-get install -y gnuplot
         sudo snap wait system seed.loaded
-        for i in 1 2 3; do
-          if timeout 180 sudo snap install octave --edge; then
-            break
-          fi
-          echo "snap install attempt $i timed out, retrying..."
-          if [ "$i" == "3" ]; then
-            echo "::error::snap install failed after 3 attempts"
-            exit 1
-          fi
-          sleep 10
-        done
+
+        # If a prior attempt in this job already kicked off an install that's
+        # still in progress in snapd, wait on that instead of re-issuing install
+        # (snapd rejects a second install request while one is in-flight).
+        existing="$(sudo snap changes octave 2>/dev/null | awk '/install-snap/ && /(Do|Doing)/ {print $1; exit}' || true)"
+        if [ -n "${existing:-}" ]; then
+          echo "Found in-progress install change $existing, waiting on it..."
+          sudo snap watch "$existing"
+        else
+          timeout 600 sudo snap install octave --edge
+        fi
+
         sudo snap connect octave:x11
 
     - name: Start Xvfb on linux
