@@ -154,8 +154,8 @@ runs:
         fi
         $EXE --version
         if [ "$INSTALL_TYPE" == "ubuntu-snap" ]; then
-          xvfb-run -a $EXE --eval "available_graphics_toolkits"
-          xvfb-run -a $EXE --eval "graphics_toolkit('gnuplot'); graphics_toolkit"
+          xvfb-run -a $EXE --no-gui --eval "available_graphics_toolkits"
+          xvfb-run -a $EXE --no-gui --eval "graphics_toolkit('gnuplot'); graphics_toolkit"
         else
           $EXE --eval "available_graphics_toolkits"
           $EXE --eval "graphics_toolkit"
