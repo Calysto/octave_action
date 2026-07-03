@@ -145,6 +145,16 @@ runs:
 
         sudo snap connect octave:x11
 
+    - name: Inspect octave snap apps (debug)
+      if: inputs.install-type == 'ubuntu-snap'
+      shell: bash
+      run: |
+        snap info octave
+        echo "---"
+        ls -la /snap/octave/current/usr/bin/ 2>/dev/null || true
+        ls -la /snap/octave/current/bin/ 2>/dev/null || true
+        snap run --shell octave -c 'echo done' 2>&1 || true
+
     - name: Start Xvfb on linux
       shell: bash
       if: ${{ startsWith(inputs.install-type, 'ubuntu') }}
