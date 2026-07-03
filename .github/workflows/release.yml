@@ -22,7 +22,7 @@ jobs:
     outputs:
       tag: ${{ steps.release.outputs.tag }}
     steps:
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
+      - uses: actions/checkout@v7
         with:
           persist-credentials: false
 
@@ -67,7 +67,7 @@ jobs:
     # Only run for stable releases (no pre-release suffixes)
     if: ${{ !inputs.dry_run && !contains(needs.release.outputs.tag, 'a') && !contains(needs.release.outputs.tag, 'b') && !contains(needs.release.outputs.tag, 'rc') && !contains(needs.release.outputs.tag, 'dev') }}
     steps:
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
+      - uses: actions/checkout@v7
         with:
           persist-credentials: false
 
