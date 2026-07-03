@@ -130,30 +130,16 @@ runs:
       run: |
         set -eu
         sudo apt-get install -y gnuplot
+
+        # Hold snapd auto-refresh so it doesn't restart itself mid-install
+        sudo snap set system refresh.hold="$(date --date='2 hours' +%Y-%m-%dT%H:%M:%S%:z)"
+
+        # Restart snapd to clear any stuck state, then wait for seeding
+        sudo systemctl restart snapd
         sudo snap wait system seed.loaded
 
-        # If a prior attempt in this job already kicked off an install that's
-        # still in progress in snapd, wait on that instead of re-issuing install
-        # (snapd rejects a second install request while one is in-flight).
-        existing="$(sudo snap changes octave 2>/dev/null | awk '/install-snap/ && /(Do|Doing)/ {print $1; exit}' || true)"
-        if [ -n "${existing:-}" ]; then
-          echo "Found in-progress install change $existing, waiting on it..."
-          sudo snap watch "$existing"
-        else
-          timeout 600 sudo snap install octave --edge
-        fi
-
+        sudo snap install octave --edge
         sudo snap connect octave:x11
-
-    - name: Inspect octave snap apps (debug)
-      if: inputs.install-type == 'ubuntu-snap'
-      shell: bash
-      run: |
-        snap info octave
-        echo "---"
-        ls -la /snap/octave/current/usr/bin/ 2>/dev/null || true
-        ls -la /snap/octave/current/bin/ 2>/dev/null || true
-        snap run --shell octave -c 'echo done' 2>&1 || true
 
     - name: Start Xvfb on linux
       shell: bash
