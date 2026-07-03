@@ -9,12 +9,12 @@ inputs:
 runs:
   using: composite
   steps:
-    - name: Set up apt cache (ubuntu)
+    - name: Set up apt cache (ubuntu-all)
       if: startsWith(inputs.install-type, 'ubuntu')
       shell: bash
       run: bash "${{ github.action_path }}/.github/scripts/ubuntu-setup-apt-cache.sh"
 
-    - name: Cache apt packages (ubuntu)
+    - name: Cache apt packages (ubuntu-all)
       if: startsWith(inputs.install-type, 'ubuntu')
       id: cache-apt
       uses: actions/cache@v4
@@ -22,7 +22,7 @@ runs:
         path: ~/apt-cache
         key: apt-${{ inputs.install-type }}-${{ env.OS_VERSION }}
 
-    - name: Restore apt packages from cache (ubuntu)
+    - name: Restore apt packages from cache (ubuntu-all)
       if: startsWith(inputs.install-type, 'ubuntu')
       shell: bash
       run: bash "${{ github.action_path }}/.github/scripts/ubuntu-restore-apt-cache.sh"
@@ -42,7 +42,7 @@ runs:
       shell: bash
       run: bash "${{ github.action_path }}/.github/scripts/ubuntu-snap-install.sh"
 
-    - name: Clean apt package cache (ubuntu)
+    - name: Clean apt package cache (ubuntu-all)
       if: startsWith(inputs.install-type, 'ubuntu')
       shell: bash
       run: bash "${{ github.action_path }}/.github/scripts/ubuntu-clean-apt-cache.sh"
