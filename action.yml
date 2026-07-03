@@ -172,6 +172,8 @@ runs:
         export EXE="octave"
         if [ "$INSTALL_TYPE" == "ubuntu-flatpak" ]; then
           export EXE="flatpak run org.octave.Octave"
+        elif [ "$INSTALL_TYPE" == "ubuntu-snap" ]; then
+          export EXE="octave.octave-cli"
         fi
         $EXE --version
         if [ "$INSTALL_TYPE" == "ubuntu-snap" ]; then
