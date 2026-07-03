@@ -131,10 +131,11 @@ runs:
         set -eu
         sudo apt-get install -y gnuplot
 
-        # Hold snapd auto-refresh so it doesn't restart itself mid-install
-        sudo snap set system refresh.hold="$(date --date='2 hours' +%Y-%m-%dT%H:%M:%S%:z)"
-
-        # Restart snapd to clear any stuck state, then wait for seeding
+        # Upgrade snapd via apt to avoid the snap self-update restart hang.
+        # The runner ships an old snapd that updates itself before any snap
+        # install, then hangs waiting for its own daemon restart. Installing
+        # snapd from apt gives us a current version without that dance.
+        sudo apt-get install -y snapd
         sudo systemctl restart snapd
         sudo snap wait system seed.loaded
 
