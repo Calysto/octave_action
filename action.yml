@@ -1,0 +1,96 @@
+name: Install Octave
+description: Installs Octave for the given platform type.
+
+inputs:
+  install-type:
+    description: 'Platform install type: ubuntu, macos, windows, ubuntu-flatpak, or ubuntu-snap'
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name: Set up apt cache (ubuntu-all)
+      if: startsWith(inputs.install-type, 'ubuntu')
+      shell: bash
+      run: bash "${{ github.action_path }}/.github/scripts/ubuntu-setup-apt-cache.sh"
+
+    - name: Cache apt packages (ubuntu-all)
+      if: startsWith(inputs.install-type, 'ubuntu')
+      id: cache-apt
+      uses: actions/cache@v4
+      with:
+        path: ~/apt-cache
+        key: apt-${{ inputs.install-type }}-${{ env.OS_VERSION }}
+
+    - name: Restore apt packages from cache (ubuntu-all)
+      if: startsWith(inputs.install-type, 'ubuntu')
+      shell: bash
+      run: bash "${{ github.action_path }}/.github/scripts/ubuntu-restore-apt-cache.sh"
+
+    - name: Install octave (ubuntu)
+      if: inputs.install-type == 'ubuntu'
+      shell: bash
+      run: bash "${{ github.action_path }}/.github/scripts/ubuntu-install.sh"
+
+    - name: Install octave (ubuntu-flatpak)
+      if: inputs.install-type == 'ubuntu-flatpak'
+      shell: bash
+      run: bash "${{ github.action_path }}/.github/scripts/ubuntu-flatpak-install.sh"
+
+    - name: Install octave (ubuntu-snap)
+      if: inputs.install-type == 'ubuntu-snap'
+      shell: bash
+      run: bash "${{ github.action_path }}/.github/scripts/ubuntu-snap-install.sh"
+
+    - name: Clean apt package cache (ubuntu-all)
+      if: startsWith(inputs.install-type, 'ubuntu')
+      shell: bash
+      run: bash "${{ github.action_path }}/.github/scripts/ubuntu-clean-apt-cache.sh"
+
+    - name: Get Octave version for cache key (macos)
+      if: inputs.install-type == 'macos'
+      shell: bash
+      run: bash "${{ github.action_path }}/.github/scripts/macos-get-version.sh"
+
+    - name: Restore Octave from cache (macos)
+      if: inputs.install-type == 'macos'
+      id: cache-brew-octave
+      uses: actions/cache@v4
+      with:
+        path: ~/brew-octave-cellar.tar
+        key: macos-brew-octave-${{ env.OCTAVE_VERSION }}-image-${{ env.ImageVersion }}
+
+    - name: Install octave (macos)
+      if: inputs.install-type == 'macos'
+      shell: bash
+      env:
+        CACHE_HIT: ${{ steps.cache-brew-octave.outputs.cache-hit }}
+      run: bash "${{ github.action_path }}/.github/scripts/macos-install.sh"
+
+    - name: Set up Octave installer cache (windows)
+      if: inputs.install-type == 'windows'
+      shell: pwsh
+      run: |
+        & "${{ github.action_path }}/.github/scripts/windows-setup-cache.ps1"
+
+    - name: Restore Octave installer from cache (windows)
+      if: inputs.install-type == 'windows'
+      id: cache-octave-windows
+      uses: actions/cache@v4
+      with:
+        path: ${{ env.OCTAVE_CACHE_PATH }}
+        key: windows-octave-${{ env.OCTAVE_VERSION }}
+
+    - name: Install Octave (windows)
+      if: inputs.install-type == 'windows'
+      shell: pwsh
+      env:
+        CACHE_HIT: ${{ steps.cache-octave-windows.outputs.cache-hit }}
+      run: |
+        & "${{ github.action_path }}/.github/scripts/windows-install.ps1"
+
+    - name: Verify octave install
+      shell: bash
+      env:
+        INSTALL_TYPE: ${{ inputs.install-type }}
+      run: bash "${{ github.action_path }}/.github/scripts/verify-install.sh"

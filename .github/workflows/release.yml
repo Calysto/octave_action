@@ -1,0 +1,98 @@
+name: Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Version to release (e.g. 1.0.0) or one of: patch, minor, major"
+        required: true
+        type: string
+      dry_run:
+        description: "Dry run (does not push changes or create release)"
+        required: false
+        type: boolean
+        default: false
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    environment: release
+    permissions:
+      contents: write
+    outputs:
+      tag: ${{ steps.release.outputs.tag }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Generate token
+        uses: actions/create-github-app-token@d72941d797fd3113feb6b93fd0dec494b13a2547 # v1
+        id: create-app-token
+        with:
+          app-id: ${{ vars.APP_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+          permission-contents: write
+
+      - name: Configure git
+        env:
+          TOKEN: ${{ steps.create-app-token.outputs.token }}
+          REPOSITORY: ${{ github.repository }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git remote set-url origin "https://x-access-token:${TOKEN}@github.com/${REPOSITORY}"
+
+      - name: Create release tag
+        id: release
+        env:
+          VERSION: ${{ inputs.version }}
+          DRY_RUN: ${{ inputs.dry_run }}
+        run: |
+          TAG="v${VERSION}"
+          echo "tag=${TAG}" >> "$GITHUB_OUTPUT"
+          if [ "$DRY_RUN" = "true" ]; then
+            echo "Dry run: would create tag ${TAG}"
+          else
+            git tag "${TAG}"
+            git push origin "${TAG}"
+          fi
+
+  update-v1-tag:
+    needs: [release]
+    runs-on: ubuntu-latest
+    environment: release
+    permissions:
+      contents: write
+    # Only run for stable releases (no pre-release suffixes)
+    if: ${{ !inputs.dry_run && !contains(needs.release.outputs.tag, 'a') && !contains(needs.release.outputs.tag, 'b') && !contains(needs.release.outputs.tag, 'rc') && !contains(needs.release.outputs.tag, 'dev') }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Generate token
+        uses: actions/create-github-app-token@d72941d797fd3113feb6b93fd0dec494b13a2547 # v1
+        id: create-app-token
+        with:
+          app-id: ${{ vars.APP_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+          permission-contents: write
+
+      - name: Configure git
+        env:
+          TOKEN: ${{ steps.create-app-token.outputs.token }}
+          REPOSITORY: ${{ github.repository }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git remote set-url origin "https://x-access-token:${TOKEN}@github.com/${REPOSITORY}"
+
+      - name: Update v1 tag
+        env:
+          TAG: ${{ needs.release.outputs.tag }}
+        run: |
+          git tag -d v1 || true
+          git push origin :refs/tags/v1 || true
+          git tag v1 "$TAG"
+          git push origin v1

@@ -1,0 +1,98 @@
+name: Tests
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+  schedule:
+    - cron: "0 6 * * 1"  # weekly on Monday
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.sha }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  test-ubuntu:
+    name: Test (ubuntu)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: ./
+        with:
+          install-type: ubuntu
+
+  test-macos:
+    name: Test (macos)
+    runs-on: macos-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: ./
+        with:
+          install-type: macos
+
+  test-windows:
+    name: Test (windows)
+    runs-on: windows-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: ./
+        with:
+          install-type: windows
+
+  test-ubuntu-flatpak:
+    name: Test (ubuntu-flatpak)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: ./
+        with:
+          install-type: ubuntu-flatpak
+
+  test-ubuntu-snap:
+    name: Test (ubuntu-snap)
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: ./
+        with:
+          install-type: ubuntu-snap
+
+  pre-commit:
+    name: Pre-commit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: calysto/maintainer_tools/actions/pre-commit-run@v1
+
+  tests-check:
+    if: always()
+    needs: [test-ubuntu, test-macos, test-windows, test-ubuntu-flatpak, test-ubuntu-snap, pre-commit]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Decide whether all jobs succeeded
+        uses: re-actors/alls-green@05ac9388f0aebcb5727afa17fcccfecd6f8ec5fe # release/v1
+        with:
+          allowed-skips: test-ubuntu-snap
+          jobs: ${{ toJSON(needs) }}
