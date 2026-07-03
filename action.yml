@@ -9,16 +9,10 @@ inputs:
 runs:
   using: composite
   steps:
-    - name: Set up apt cache dir (ubuntu)
+    - name: Set up apt cache (ubuntu)
       if: startsWith(inputs.install-type, 'ubuntu')
       shell: bash
-      run: |
-        mkdir -p ~/apt-cache
-        {
-          echo 'OS_VERSION<<ENDOFVALUE'
-          . /etc/os-release && echo "$VERSION_ID"
-          echo 'ENDOFVALUE'
-        } >> "$GITHUB_ENV"
+      run: bash "${{ github.action_path }}/.github/scripts/ubuntu-setup-apt-cache.sh"
 
     - name: Cache apt packages (ubuntu)
       if: startsWith(inputs.install-type, 'ubuntu')
@@ -31,37 +25,32 @@ runs:
     - name: Restore apt packages from cache (ubuntu)
       if: startsWith(inputs.install-type, 'ubuntu')
       shell: bash
-      run: find ~/apt-cache -name "*.deb" -exec sudo cp {} /var/cache/apt/archives/ \;
-
-    - name: Update apt package lists (ubuntu)
-      if: startsWith(inputs.install-type, 'ubuntu')
-      shell: bash
-      run: sudo apt-get update
+      run: bash "${{ github.action_path }}/.github/scripts/ubuntu-restore-apt-cache.sh"
 
     - name: Install octave (ubuntu)
       if: inputs.install-type == 'ubuntu'
       shell: bash
       run: bash "${{ github.action_path }}/.github/scripts/ubuntu-install.sh"
 
+    - name: Install octave (ubuntu-flatpak)
+      if: inputs.install-type == 'ubuntu-flatpak'
+      shell: bash
+      run: bash "${{ github.action_path }}/.github/scripts/ubuntu-flatpak-install.sh"
+
+    - name: Install octave (ubuntu-snap)
+      if: inputs.install-type == 'ubuntu-snap'
+      shell: bash
+      run: bash "${{ github.action_path }}/.github/scripts/ubuntu-snap-install.sh"
+
     - name: Clean apt package cache (ubuntu)
       if: startsWith(inputs.install-type, 'ubuntu')
       shell: bash
-      run: |
-        set -eu
-        sudo apt-get autoclean
-        sudo find /var/cache/apt/archives -name "*.deb" -exec cp {} ~/apt-cache/ \;
-        sudo rm -f /var/cache/apt/archives/lock
-        sudo rm -rf /var/cache/apt/archives/partial
+      run: bash "${{ github.action_path }}/.github/scripts/ubuntu-clean-apt-cache.sh"
 
     - name: Get Octave version for cache key (macos)
       if: inputs.install-type == 'macos'
       shell: bash
-      run: |
-        {
-          echo 'OCTAVE_VERSION<<ENDOFVALUE'
-          brew info --json octave | python3 -c "import sys,json; print(json.load(sys.stdin)[0]['versions']['stable'])"
-          echo 'ENDOFVALUE'
-        } >> "$GITHUB_ENV"
+      run: bash "${{ github.action_path }}/.github/scripts/macos-get-version.sh"
 
     - name: Restore Octave from cache (macos)
       if: inputs.install-type == 'macos'
@@ -99,7 +88,7 @@ runs:
       if: inputs.install-type == 'windows' && steps.cache-octave-windows.outputs.cache-hit != 'true'
       shell: pwsh
       run: |
-        winget download --id GNU.Octave -e --download-directory $env:OCTAVE_CACHE_PATH
+        & "${{ github.action_path }}/.github/scripts/windows-download.ps1"
 
     - name: Install Octave (windows)
       if: inputs.install-type == 'windows'
@@ -107,41 +96,8 @@ runs:
       run: |
         & "${{ github.action_path }}/.github/scripts/windows-install.ps1"
 
-    - name: Install octave via flatpak (ubuntu-flatpak)
-      if: inputs.install-type == 'ubuntu-flatpak'
-      shell: bash
-      run: bash "${{ github.action_path }}/.github/scripts/ubuntu-flatpak-install.sh"
-
-    - name: Install octave via snap (ubuntu-snap)
-      if: inputs.install-type == 'ubuntu-snap'
-      shell: bash
-      run: bash "${{ github.action_path }}/.github/scripts/ubuntu-snap-install.sh"
-
-    - name: Start Xvfb on linux
-      shell: bash
-      if: ${{ startsWith(inputs.install-type, 'ubuntu') }}
-      run: |
-        set -eu
-        Xvfb :99 -screen 0 1024x768x24 &
-        echo "DISPLAY=:99" >> "$GITHUB_ENV"
-
     - name: Verify octave install
       shell: bash
       env:
         INSTALL_TYPE: ${{ inputs.install-type }}
-      run: |
-        set -eu
-        export EXE="octave"
-        if [ "$INSTALL_TYPE" == "ubuntu-flatpak" ]; then
-          export EXE="flatpak run org.octave.Octave"
-        elif [ "$INSTALL_TYPE" == "ubuntu-snap" ]; then
-          export EXE="octave.octave-cli"
-        fi
-        $EXE --version
-        if [ "$INSTALL_TYPE" == "ubuntu-snap" ]; then
-          xvfb-run -a $EXE --no-gui --eval "available_graphics_toolkits"
-          xvfb-run -a $EXE --no-gui --eval "graphics_toolkit('gnuplot'); graphics_toolkit"
-        else
-          $EXE --eval "available_graphics_toolkits"
-          $EXE --eval "graphics_toolkit"
-        fi
+      run: bash "${{ github.action_path }}/.github/scripts/verify-install.sh"
