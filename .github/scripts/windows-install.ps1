@@ -1,3 +1,7 @@
+if ($env:CACHE_HIT -ne "true") {
+  winget download --id GNU.Octave -e --download-directory $env:OCTAVE_CACHE_PATH
+}
+
 $installer = Get-ChildItem $env:OCTAVE_CACHE_PATH -Filter "*.exe" | Select-Object -First 1
 echo "Running installer: $($installer.FullName)"
 Start-Process -FilePath $installer.FullName -ArgumentList "/S" -Wait -NoNewWindow

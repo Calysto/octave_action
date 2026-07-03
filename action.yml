@@ -60,14 +60,11 @@ runs:
         path: ~/brew-octave-cellar.tar
         key: macos-brew-octave-${{ env.OCTAVE_VERSION }}-image-${{ env.ImageVersion }}
 
-    - name: Install Octave from cache (macos)
-      if: inputs.install-type == 'macos' && steps.cache-brew-octave.outputs.cache-hit == 'true'
-      shell: bash
-      run: bash "${{ github.action_path }}/.github/scripts/macos-install-cache.sh"
-
     - name: Install octave (macos)
-      if: inputs.install-type == 'macos' && steps.cache-brew-octave.outputs.cache-hit != 'true'
+      if: inputs.install-type == 'macos'
       shell: bash
+      env:
+        CACHE_HIT: ${{ steps.cache-brew-octave.outputs.cache-hit }}
       run: bash "${{ github.action_path }}/.github/scripts/macos-install.sh"
 
     - name: Set up Octave installer cache (windows)
@@ -84,15 +81,11 @@ runs:
         path: ${{ env.OCTAVE_CACHE_PATH }}
         key: windows-octave-${{ env.OCTAVE_VERSION }}
 
-    - name: Download Octave installer (windows)
-      if: inputs.install-type == 'windows' && steps.cache-octave-windows.outputs.cache-hit != 'true'
-      shell: pwsh
-      run: |
-        & "${{ github.action_path }}/.github/scripts/windows-download.ps1"
-
     - name: Install Octave (windows)
       if: inputs.install-type == 'windows'
       shell: pwsh
+      env:
+        CACHE_HIT: ${{ steps.cache-octave-windows.outputs.cache-hit }}
       run: |
         & "${{ github.action_path }}/.github/scripts/windows-install.ps1"
 
