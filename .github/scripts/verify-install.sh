@@ -13,11 +13,11 @@ if [[ "${INSTALL_TYPE}" == ubuntu* ]]; then
   export DISPLAY=:99
 fi
 
-$EXE --version
+eval "$EXE --version"
 if [ "${INSTALL_TYPE}" == "ubuntu-snap" ]; then
-  xvfb-run -a $EXE --no-gui --eval "available_graphics_toolkits"
-  xvfb-run -a $EXE --no-gui --eval "graphics_toolkit('gnuplot'); graphics_toolkit"
+  eval "xvfb-run -a $EXE --no-gui --eval \"available_graphics_toolkits\""
+  eval "xvfb-run -a $EXE --no-gui --eval \"graphics_toolkit('gnuplot'); graphics_toolkit\""
 else
-  $EXE --eval "available_graphics_toolkits"
-  $EXE --eval "graphics_toolkit"
+  eval "$EXE --eval \"available_graphics_toolkits\""
+  eval "$EXE --eval \"graphics_toolkit\""
 fi

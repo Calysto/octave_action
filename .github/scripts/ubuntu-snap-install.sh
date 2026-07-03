@@ -15,6 +15,10 @@ for i in $(seq 1 120); do
   fi
   sleep 5
 done
+if ! sudo snap version >/dev/null 2>&1; then
+  echo "snapd did not recover after 600s" >&2
+  exit 1
+fi
 
 sudo snap install octave --edge
 sudo snap connect octave:x11

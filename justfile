@@ -1,2 +1,2 @@
 pre-commit *args:
-    pre-commit run --all-files {{args}}
+    prek run --all-files {{args}}
