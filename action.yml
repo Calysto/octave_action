@@ -41,9 +41,7 @@ runs:
     - name: Install octave (ubuntu)
       if: inputs.install-type == 'ubuntu'
       shell: bash
-      run: |
-        set -eu
-        sudo apt-get install -y octave gnuplot
+      run: bash "${{ github.action_path }}/.github/scripts/ubuntu-install.sh"
 
     - name: Clean apt package cache (ubuntu)
       if: startsWith(inputs.install-type, 'ubuntu')
@@ -109,44 +107,15 @@ runs:
       run: |
         & "${{ github.action_path }}/.github/scripts/windows-install.ps1"
 
-    - name: Install flatpak and dbus-x11 (ubuntu-flatpak)
-      if: inputs.install-type == 'ubuntu-flatpak'
-      shell: bash
-      run: |
-        set -eu
-        sudo apt-get install -y flatpak dbus-x11
-
     - name: Install octave via flatpak (ubuntu-flatpak)
       if: inputs.install-type == 'ubuntu-flatpak'
       shell: bash
-      run: |
-        set -eu
-        sudo flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
-        sudo flatpak install -y --noninteractive flathub org.octave.Octave
+      run: bash "${{ github.action_path }}/.github/scripts/ubuntu-flatpak-install.sh"
 
     - name: Install octave via snap (ubuntu-snap)
       if: inputs.install-type == 'ubuntu-snap'
       shell: bash
-      run: |
-        set -eu
-        sudo apt-get install -y gnuplot
-        sudo snap wait system seed.loaded
-
-        # Trigger the snapd snap self-update proactively so the daemon restart
-        # happens now rather than mid-install of octave. --no-wait returns
-        # immediately; we then poll until snapd is back up.
-        sudo snap install snapd --no-wait || true
-        echo "Waiting for snapd to finish restarting..."
-        for i in $(seq 1 120); do
-          if sudo snap version >/dev/null 2>&1; then
-            echo "snapd ready after ${i}x5s"
-            break
-          fi
-          sleep 5
-        done
-
-        sudo snap install octave --edge
-        sudo snap connect octave:x11
+      run: bash "${{ github.action_path }}/.github/scripts/ubuntu-snap-install.sh"
 
     - name: Start Xvfb on linux
       shell: bash
