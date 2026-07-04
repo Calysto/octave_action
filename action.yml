@@ -47,24 +47,18 @@ runs:
       shell: bash
       run: bash "${{ github.action_path }}/.github/scripts/ubuntu-clean-apt-cache.sh"
 
-    - name: Get Octave version for cache key (macos)
+    - name: Restore Homebrew downloads cache (macos)
       if: inputs.install-type == 'macos'
-      shell: bash
-      run: bash "${{ github.action_path }}/.github/scripts/macos-get-version.sh"
-
-    - name: Restore Octave from cache (macos)
-      if: inputs.install-type == 'macos'
-      id: cache-brew-octave
       uses: actions/cache@v4
       with:
-        path: ~/brew-octave-cellar.tar
-        key: macos-brew-octave-${{ env.OCTAVE_VERSION }}-gcc-${{ env.GCC_VERSION }}
+        path: ~/Library/Caches/Homebrew/downloads
+        key: macos-brew-downloads-${{ github.run_id }}
+        restore-keys: |
+          macos-brew-downloads-
 
     - name: Install octave (macos)
       if: inputs.install-type == 'macos'
       shell: bash
-      env:
-        CACHE_HIT: ${{ steps.cache-brew-octave.outputs.cache-hit }}
       run: bash "${{ github.action_path }}/.github/scripts/macos-install.sh"
 
     - name: Set up Octave installer cache (windows)
