@@ -40,6 +40,19 @@ jobs:
         with:
           install-type: macos
 
+  test-macos-cache-restore:
+    name: Test (macos, cache restore)
+    needs: test-macos
+    runs-on: macos-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: ./
+        with:
+          install-type: macos
+
   test-windows:
     name: Test (windows)
     runs-on: windows-latest
@@ -88,7 +101,7 @@ jobs:
 
   tests-check:
     if: always()
-    needs: [test-ubuntu, test-macos, test-windows, test-ubuntu-flatpak, test-ubuntu-snap, pre-commit]
+    needs: [test-ubuntu, test-macos, test-macos-cache-restore, test-windows, test-ubuntu-flatpak, test-ubuntu-snap, pre-commit]
     runs-on: ubuntu-latest
     steps:
       - name: Decide whether all jobs succeeded
