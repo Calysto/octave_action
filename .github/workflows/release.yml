@@ -118,7 +118,6 @@ jobs:
         env:
           TAG: ${{ needs.release.outputs.tag }}
         run: |
-          git tag -d v1 || true
-          git push origin :refs/tags/v1 || true
-          git tag v1 "$TAG"
-          git push origin v1
+          git fetch origin "refs/tags/${TAG}:refs/tags/${TAG}"
+          git tag -f v1 "$TAG"
+          git push origin v1 --force
