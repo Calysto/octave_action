@@ -58,7 +58,7 @@ runs:
       uses: actions/cache@v4
       with:
         path: ~/brew-octave-cellar.tar
-        key: macos-brew-octave-${{ env.OCTAVE_VERSION }}-image-${{ env.ImageVersion }}
+        key: macos-brew-octave-${{ env.OCTAVE_VERSION }}-gcc-${{ env.GCC_VERSION }}
 
     - name: Install octave (macos)
       if: inputs.install-type == 'macos'
