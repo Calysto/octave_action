@@ -39,5 +39,11 @@ jobs:
 Install [just](https://github.com/casey/just) and [pre-commit](https://pre-commit.com), then run:
 
 ```shell
-just pre-commit
+just lint
+```
+
+To also run manual-stage hooks (`actionlint`):
+
+```shell
+just lint-all
 ```
