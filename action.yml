@@ -17,7 +17,7 @@ runs:
     - name: Cache apt packages (ubuntu-all)
       if: startsWith(inputs.install-type, 'ubuntu')
       id: cache-apt
-      uses: actions/cache@v4
+      uses: actions/cache@v6
       with:
         path: ~/apt-cache
         key: apt-${{ inputs.install-type }}-${{ env.OS_VERSION }}
@@ -49,7 +49,7 @@ runs:
 
     - name: Restore Homebrew downloads cache (macos)
       if: inputs.install-type == 'macos'
-      uses: actions/cache@v4
+      uses: actions/cache@v6
       with:
         path: ~/Library/Caches/Homebrew/downloads
         key: macos-brew-downloads-${{ github.run_id }}
@@ -70,7 +70,7 @@ runs:
     - name: Restore Octave installer from cache (windows)
       if: inputs.install-type == 'windows'
       id: cache-octave-windows
-      uses: actions/cache@v4
+      uses: actions/cache@v6
       with:
         path: ${{ env.OCTAVE_CACHE_PATH }}
         key: windows-octave-${{ env.OCTAVE_VERSION }}
